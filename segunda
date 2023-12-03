@@ -1,0 +1,233 @@
+import numpy as np
+import pandas as pd
+import math
+
+#Permitir al programa leer una base de datos
+
+# Función para cargar el archivo de texto plano
+def cargardatos(archivo, delimitador):
+    data=pd.read_csv(archivo, delimiter=delimitador)
+    return data
+
+
+def mostrardatos(data):
+    print(data)
+
+
+def tamVector():
+    tam = int(input("Tamanio del vector ( ingrese 4 para que no haya error): "))
+    #definir un vector con dimension tam
+    vector = []
+    for i in range(tam):
+        valor = input(f"Introduzca el valor {i}: ")
+        vector.append(valor)
+    
+    return vector
+        
+    #print(vector)
+    
+#funcion para clasificador K-NN
+def KNNfuncion(vector_clasificar, database):
+    
+    opcion = int(input("Ingrese si quiere clasificar con 'euclideana(1)' o 'manhattan(2)': "))
+    
+    if opcion == 1:
+        resultados_distancias = euclideana(vector_clasificar,database)
+        vecino_mas_cercano(resultados_distancias)
+    
+        
+    elif opcion == 2:
+        resultados_distancias = manhattan(vector_clasificar, database)
+        #print(resultados_distancias)
+        #print(sorted(resultados_distancias))
+        vecino_mas_cercano(resultados_distancias)
+    else:
+        print("Opcion no valida")
+        
+    
+    
+#funcion euclidiana
+
+def euclideana(vector_clasificar, database):
+    
+    resultados = []
+    
+    for i in database:
+        suma=0
+        indice = 0
+    
+        #print("i = ",i)
+        for j in i:
+            #restar el valor j desl vector PX con el valor j de los datos
+            
+            #print("vector_clasificar[indice] =  ",vector_clasificar[indice])
+            #print("j = ",j)
+            
+            resta = float(vector_clasificar[indice]) - j
+            indice  = indice + 1
+            cuadrado = math.pow(resta,2)
+            #print("",j,"")
+            suma  = suma + cuadrado
+    
+        distancia = math.sqrt(suma)
+        #guardar los resultados en una lista
+        resultados.append(distancia)
+    
+    
+    
+    return resultados
+#funcion manhattan
+def manhattan(vector_clasificar, database):
+    resultados_distancia = []
+    #print(vector_clasificar)
+    for i in database:
+        suma = 0
+        indice = 0
+        for j in i:
+            vector_clasif = float(vector_clasificar[indice])
+            resultado_absoluto = abs(vector_clasif - j)
+            #print(f" {vector_clasif} - {j} = {resultado_absoluto}")
+            suma = suma + resultado_absoluto
+            indice=indice+1
+    
+        distancia = suma
+        #guardar las distancias cada vez que termine la suma de las distancias de sus dimensiones
+        resultados_distancia.append(distancia)
+        
+    return   resultados_distancia
+        
+def vecino_mas_cercano(resultados_distancias):
+    vecino = int(input("Ingrese con cuantos vecinos desea comparar: "))
+    resultados_ordenados = sorted(resultados_distancias)
+    etiqueta1 =0 #Iris-setosa
+    etiqueta2 =0 #Iris-versicolor
+    etiqueta3 =0 #Iris-virginica
+    for i in range(vecino):
+        valor_a_buscar = resultados_ordenados[i]
+        print(f"Distancia {valor_a_buscar}")
+
+        # Verificar si el valor está en la lista antes de obtener el índice
+        if valor_a_buscar in resultados_distancias:
+            indice = resultados_distancias.index(valor_a_buscar)
+            print(f"Indice : {indice}")
+            #se pregunta si esta en los rangos de la base de datos
+            if (0 < indice and indice < 50):
+                etiqueta1=+1
+            elif (50 < indice and indice < 100):
+                etiqueta2=+1
+            elif (100 < indice and indice < 150):
+                etiqueta3=+1
+        else:
+            print(f"El valor {valor_a_buscar} no está en la lista.")
+    
+    if etiqueta1 > etiqueta2 and etiqueta1 > etiqueta3:
+        print("El vector se clasifica en Iris-setosa")
+    elif etiqueta2 > etiqueta1 and etiqueta2 > etiqueta3:
+        print("El vector se clasifica en Iris-versicolor")
+    elif etiqueta3 > etiqueta1 and etiqueta3 > etiqueta2:
+        print("El vector se clasifica en Iris-virginica")
+    else:
+        print("El valor esta entre mas de una clasificacion")
+            
+            
+    
+
+def MinimaDistancia(vector_clasificar, database):
+    opcion = int(input("Minima_distancia =Ingrese si quiere clasificar con 'euclideana(1)' o 'manhattan(2)': "))
+    
+    if opcion == 1:
+        resultados_distancias = euclideana_minima_distancia(vector_clasificar, database)
+        etiqueta, indice_minima_distancia = clasificar_minima_distancia(resultados_distancias)
+        mostrar_resultado(etiqueta, resultados_distancias, indice_minima_distancia)
+    
+    elif opcion == 2:
+        resultados_distancias = manhattan_minima_distancia(vector_clasificar, database)
+        etiqueta, indice_minima_distancia = clasificar_minima_distancia(resultados_distancias)
+        mostrar_resultado(etiqueta, resultados_distancias, indice_minima_distancia)
+    else:
+        print("Opción no válida")
+
+# Función para clasificar utilizando mínima distancia
+def clasificar_minima_distancia(resultados_distancias):
+    indice_minima_distancia = np.argmin(resultados_distancias)
+    distancia_minima = resultados_distancias[indice_minima_distancia]
+
+    if 0 <= indice_minima_distancia < 50:
+        etiqueta = "Iris-setosa"
+    elif 50 <= indice_minima_distancia < 100:
+        etiqueta = "Iris-versicolor"
+    elif 100 <= indice_minima_distancia < 150:
+        etiqueta = "Iris-virginica"
+    else:
+        etiqueta = "Clasificación no válida"
+    return etiqueta, indice_minima_distancia
+    
+
+def mostrar_resultado(etiqueta, resultados_distancias, indice_minima_distancia):
+    print("Distancias generadas:")
+    for i, distancia in enumerate(resultados_distancias):
+        print(f"Índice {i}, Distancia: {distancia}")
+    print(f"Distancia mínima: {resultados_distancias[indice_minima_distancia]}")
+    print(f"El vector se clasifica en {etiqueta}")
+    print(f"Índice de la clasificación: {indice_minima_distancia}")
+
+
+
+
+
+def manhattan_minima_distancia(vector_clasificar, database):
+    distancias = np.zeros(database.shape[0])
+    for i, patron in enumerate(database):
+        distancias[i] = distancia_manhattan(vector_clasificar, patron)
+    return distancias
+
+def distancia_manhattan(patron, generalizacion):
+    return np.sum(np.abs(np.array(patron, dtype=float) - np.array(generalizacion, dtype=float)))
+
+
+def euclideana_minima_distancia(vector_clasificar, database):
+    distancias = np.zeros(database.shape[0])
+    for i, patron in enumerate(database):
+        distancias[i] = distancia_euclidiana(vector_clasificar, patron)
+    return distancias
+
+def distancia_euclidiana(patron, generalizacion):
+    return np.sqrt(np.sum((np.array(patron, dtype=float) - np.array(generalizacion, dtype=float))**2))
+
+
+
+
+
+
+
+
+
+
+
+
+archivo = "datos.csv"
+delimitador = ","
+
+datos = cargardatos(archivo,delimitador)
+mostrardatos(datos)
+datos_values = datos.values #extraer solos los datos del dataframe
+vector_usuario = tamVector()
+#tipo_dato = type(vector_usuario)
+#print("El tipo de dato de tu lista es: ",tipo_dato)
+
+#delimitados los datos, para que no agarre datos string
+num_filas, num_columnas = datos.shape
+
+limite_inferior_columnas = 0
+limite_superior_columnas = num_columnas - 1
+
+
+#eliminamos la ultima columna de tipo string que no no es util
+data_values = datos_values[:, limite_inferior_columnas:limite_superior_columnas]
+#data_float = data_float.astype(float)
+
+#print(data_values)
+KNNfuncion(vector_usuario,data_values)
+
+
+MinimaDistancia(vector_usuario, data_values)
