@@ -1,0 +1,64 @@
+# 1. Permitir al programa leer una base de datos
+def cargardatos(archivo, delimitador):
+    with open(archivo, 'r') as file:
+        lines = file.readlines()
+
+    # Separar las líneas en columnas usando el delimitador
+    data = [line.strip().split(delimitador) for line in lines]
+
+    # Crear diccionario de datos
+    columnas = data[0]
+    data_dict = {column: [] for column in columnas}
+
+    for line in data[1:]:
+        for i, value in enumerate(line):
+            data_dict[columnas[i]].append(value)
+
+    return data_dict
+
+# 2. Mostrar la cantidad total de registros y por clase
+def mostrar_info_clases(data):
+    total_registros = len(data['Clase'])
+    print(f"Total de registros: {total_registros}")
+
+    # Agrupar por clase y contar registros
+    clases = set(data['Clase'])
+    for clase in clases:
+        registros_clase = sum(1 for c in data['Clase'] if c == clase)
+        print(f"Registros en la clase {clase}: {registros_clase}")
+
+# 3. Mostrar la distribución de clases
+def mostrar_distribucion_clases(data):
+    total_registros = len(data['Clase'])
+    distribucion = {clase: sum(1 for c in data['Clase'] if c == clase) / total_registros for clase in set(data['Clase'])}
+    print("Distribución de clases:")
+    print(distribucion)
+
+# 4. Detectar valores faltantes e indicar la información solicitada
+def detectar_valores_faltantes(data):
+    # a. Conjunto de tuplas (Renglon, Columna(Atributo)) donde faltan los valores
+    valores_faltantes = [(i, columna) for i, columna in enumerate(data) if any(value == '' for value in data[columna])]
+    print("Valores faltantes:")
+    print(valores_faltantes)
+
+    # b. Cantidad y Porcentaje de valores faltantes por Atributo y por atributo-Clase
+    for columna in data:
+        total_faltantes = sum(1 for value in data[columna] if value == '')
+        porcentaje_faltantes = (total_faltantes / len(data[columna])) * 100
+        print(f"Atributo '{columna}': {total_faltantes} faltantes ({porcentaje_faltantes:.2f}%)")
+
+        if 'Clase' in data:
+            clases_unicas = set(data['Clase'])
+            for clase in clases_unicas:
+                total_faltantes_clase = sum(1 for i, value in enumerate(data['Clase']) if value == clase and data[columna][i] == '')
+                porcentaje_faltantes_clase = (total_faltantes_clase / sum(1 for value in data['Clase'] if value == clase)) * 100
+                print(f"  '{clase}': {total_faltantes_clase} faltantes ({porcentaje_faltantes_clase:.2f}%)")
+
+# Ejemplo de uso
+archivo = 'datos.csv'  # Reemplazar con el nombre de tu archivo
+delimitador = ','  # Reemplazar con el delimitador correcto
+
+datos = cargardatos(archivo, delimitador)
+mostrar_info_clases(datos)
+mostrar_distribucion_clases(datos)
+detectar_valores_faltantes(datos)
